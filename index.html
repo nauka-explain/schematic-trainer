@@ -2,154 +2,94 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Симулятор «Чтение схем и печатных плат»</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тренажер трассировки печатных плат</title>
+<script>var t;try{t=localStorage.getItem('pcb-theme')}catch(e){}if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t</script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<!-- набор иконок -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <symbol id="i-select" viewBox="0 0 24 24"><path d="M5 3l14 8-6 2-3 6z"/></symbol>
-    <symbol id="i-wire" viewBox="0 0 24 24"><circle cx="5" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><path d="M7 18h5V6h5"/></symbol>
-    <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M20 4v5h-5"/></symbol>
-    <symbol id="i-mirror" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6z"/><path d="M15 7l6 10h-6z"/></symbol>
-    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></symbol>
-    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M8 5L3 10l5 5"/><path d="M3 10h10a6 6 0 0 1 0 12h-3"/></symbol>
-    <symbol id="i-redo" viewBox="0 0 24 24"><path d="M16 5l5 5-5 5"/><path d="M21 10H11a6 6 0 0 0 0 12h3"/></symbol>
-    <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></symbol>
-    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
-    <symbol id="i-restart" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></symbol>
-    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.5"/></symbol>
-    <symbol id="i-cap" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/></symbol>
-    <symbol id="i-exam" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 14l2 2 4-4"/></symbol>
-    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
-    <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></symbol>
-    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
-    <symbol id="i-top" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="1.5"/><path d="M12 2v4M10 3.5L12 2l2 1.5"/></symbol>
-    <symbol id="i-bottom" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5" stroke-dasharray="3 2"/><path d="M12 22v-4M10 20.5L12 22l2-1.5"/></symbol>
-    <symbol id="i-iso" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12L4 7.5M12 12v9"/></symbol>
-    <symbol id="i-side" viewBox="0 0 24 24"><rect x="2" y="15" width="20" height="3" rx="1"/><rect x="5" y="9" width="4" height="6"/><rect x="12" y="5" width="3" height="10"/><rect x="17" y="10" width="3" height="5"/></symbol>
-    <symbol id="i-silk" viewBox="0 0 24 24"><path d="M5 19L12 5l7 14M8 14h8"/></symbol>
-    <symbol id="i-copper" viewBox="0 0 24 24"><path d="M3 8h6l3 4h7M3 16h8l2-3"/><circle cx="21" cy="12" r="1.3"/></symbol>
-    <symbol id="i-pad" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/></symbol>
-    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/></symbol>
-    <symbol id="i-rats" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="9" r="2"/><circle cx="9" cy="19" r="2"/><path d="M7 6.5l10 2M5.5 8l3 9M11 18l7-7" stroke-dasharray="2 2"/></symbol>
-    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></symbol>
-    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
-    <symbol id="i-playc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/></symbol>
-    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
-    <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="10" r="1"/><path d="M12 10h5M8 15h9"/></symbol>
-    <symbol id="i-done" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></symbol>
-    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
-    <symbol id="i-boxsel" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" stroke-dasharray="3 2"/><path d="M9 9l6 3-2.5 1-1 2.5z"/></symbol>
-  </defs>
-</svg>
-
-<header class="topbar">
-  <div class="brand">
-    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="3" fill="#0f4a33"/><path d="M5 9h8l3 4h11M5 16h6l2 3h14M5 23h10l3-4h9" stroke="#d9a35a" stroke-width="1.6" fill="none"/><circle cx="13" cy="9" r="2" fill="#e9e6d8"/><circle cx="27" cy="13" r="2" fill="#e9e6d8"/><circle cx="27" cy="19" r="2" fill="#e9e6d8"/></svg>
-    <div class="titles"><h1>Чтение схем и печатных плат</h1><button id="boardBtn" class="boardbtn" data-tip="Выбрать плату" aria-haspopup="true"><svg class="ic"><use href="#i-board"/></svg><span id="boardName">…</span><svg class="ic chev"><use href="#i-chev"/></svg></button></div>
-  </div>
-  <div class="seg" role="group" aria-label="Режим">
-    <button data-mode="exam" class="on" data-tip="Экзамен: без подсказок"><svg class="ic"><use href="#i-exam"/></svg><span>Экзамен</span></button>
-    <button data-mode="train" data-tip="Обучение: подсветка деталей на плате"><svg class="ic"><use href="#i-cap"/></svg><span>Обучение</span></button>
-  </div>
-  <div class="meters">
-    <span class="meter" data-tip="Время"><svg class="ic"><use href="#i-clock"/></svg><b id="timer">00:00</b></span>
-    <span class="meter" data-tip="Размещено компонентов"><svg class="ic"><use href="#i-chip"/></svg><b id="mComps">0/0</b></span>
-    <span class="meter" data-tip="Подключено выводов"><svg class="ic"><use href="#i-link"/></svg><b id="progress">0/0</b></span>
-  </div>
-  <div class="actions">
-    <button id="btnHint" class="ico" data-tip="Подсказка: одно недостающее соединение" aria-label="Подсказка"><svg class="ic"><use href="#i-bulb"/></svg></button>
-    <button id="btnReset" class="ico" data-tip="Начать заново" aria-label="Начать заново"><svg class="ic"><use href="#i-restart"/></svg></button>
-    <button id="btnHelp" class="ico" data-tip="Справка" aria-label="Справка"><svg class="ic"><use href="#i-help"/></svg></button>
-    <button id="btnCheck" class="primary" data-tip="Проверить схему"><svg class="ic"><use href="#i-check"/></svg><span>Проверить</span></button>
-  </div>
+<header class="top">
+  <h1>Тренажер трассировки печатных плат</h1>
+  <button id="bTheme" class="switch" role="switch" aria-checked="true" aria-label="Тёмная тема">
+    <span class="ic">☀</span><span class="ic">☾</span><i class="knob"></i>
+  </button>
 </header>
-
-<div id="boardMenu" class="boardmenu" hidden role="menu"></div>
-<main id="split">
-  <section id="pane3d" aria-label="3D-модель платы">
-    <div id="view3d"></div>
-    <div id="tags3d"></div>
-    <div id="loading3d">Загрузка…</div>
-    <div class="floatbar tl">
-      <button class="ico" data-view="top" data-tip="Вид сверху" aria-label="Вид сверху"><svg class="ic"><use href="#i-top"/></svg></button>
-      <button class="ico" data-view="bottom" data-tip="Вид снизу" aria-label="Вид снизу"><svg class="ic"><use href="#i-bottom"/></svg></button>
-      <button class="ico" data-view="iso" data-tip="Изометрия" aria-label="Изометрия"><svg class="ic"><use href="#i-iso"/></svg></button>
-      <button class="ico" data-view="front" data-tip="Вид сбоку" aria-label="Вид сбоку"><svg class="ic"><use href="#i-side"/></svg></button>
-    </div>
-    <div class="floatbar tr col">
-      <button class="ico tog on" data-layer="comps" data-pos="l" data-tip="Компоненты" aria-label="Компоненты"><svg class="ic"><use href="#i-chip"/></svg></button>
-      <button class="ico tog on" data-layer="silk" data-pos="l" data-tip="Шелкография (обозначения)" aria-label="Шелкография"><svg class="ic"><use href="#i-silk"/></svg></button>
-      <button class="ico tog on" data-layer="copper" data-pos="l" data-tip="Дорожки" aria-label="Дорожки"><svg class="ic"><use href="#i-copper"/></svg></button>
-      <button class="ico tog on" data-layer="pad" data-pos="l" data-tip="Площадки" aria-label="Площадки"><svg class="ic"><use href="#i-pad"/></svg></button>
-      <button class="ico tog" id="tagsToggle" data-pos="l" data-tip="Обозначения деталей (режим обучения)" aria-label="Обозначения" hidden><svg class="ic"><use href="#i-tag"/></svg></button>
-    </div>
-    <div id="card3d" class="card3d" hidden></div>
+<main>
+  <section class="board">
+    <canvas id="cv"></canvas>
+    <div class="under"><p id="msg" class="msg"></p>
+      <div class="side"><span id="badge" class="badge">Верхний слой</span>
+        <label class="zoom">Масштаб<input id="zoom" type="range" min="1" max="4" step="0.05" value="1" aria-label="Масштаб платы"></label>
+      </div></div>
   </section>
-  <div id="gutter" role="separator" aria-orientation="vertical" tabindex="0"></div>
-  <section id="paneSch" aria-label="Схема">
-    <div class="toolbar">
-      <button class="ico on" data-tool="select" data-tip="Выбор и рамка (V)" aria-label="Выбор"><svg class="ic"><use href="#i-select"/></svg></button>
-      <button class="ico" data-tool="wire" data-tip="Провод (W)" aria-label="Провод"><svg class="ic"><use href="#i-wire"/></svg></button>
-      <span class="sep"></span>
-      <button class="ico" id="bRot" data-tip="Повернуть (R)" aria-label="Повернуть"><svg class="ic"><use href="#i-rotate"/></svg></button>
-      <button class="ico" id="bMir" data-tip="Отразить (X)" aria-label="Отразить"><svg class="ic"><use href="#i-mirror"/></svg></button>
-      <button class="ico" id="bDel" data-tip="Удалить (Del)" aria-label="Удалить"><svg class="ic"><use href="#i-trash"/></svg></button>
-      <span class="sep"></span>
-      <button class="ico" id="bUndo" data-tip="Отменить (Ctrl+Z)" aria-label="Отменить"><svg class="ic"><use href="#i-undo"/></svg></button>
-      <button class="ico" id="bRedo" data-tip="Повторить (Ctrl+Y)" aria-label="Повторить"><svg class="ic"><use href="#i-redo"/></svg></button>
-      <span class="sep"></span>
-      <button class="ico" id="bFit" data-tip="Вписать (F)" aria-label="Вписать"><svg class="ic"><use href="#i-fit"/></svg></button>
-      <button class="ico push" id="bAnim" data-pos="l" data-tip="Анимация: как строится схема" aria-label="Анимация построения"><svg class="ic"><use href="#i-playc"/></svg></button>
-      <button class="ico tog" id="ratsToggle" data-pos="l" data-tip="Показать эталон: воздушные связи" aria-label="Эталон"><svg class="ic"><use href="#i-rats"/></svg></button>
+  <aside class="info">
+    <ul class="hint">
+      <li>Соедините дорожками парные площадки одного цвета</li>
+      <li>Сплошной контур — SMD-компонент: он стоит на одной стороне платы, под его корпусом дорожки проводить нельзя</li>
+      <li>Пунктирный контур — THT-компонент: выводы сквозные и доступны с обеих сторон, под корпусом дорожки проходят</li>
+      <li class="touch-only">Нажмите на площадку и ведите палец, отпустите, чтобы зафиксировать участок</li>
+      <li class="touch-only">Двумя пальцами сдвигайте и масштабируйте плату</li>
+    </ul>
+    <div class="bar"><i id="barfill"></i></div>
+    <div class="stats">
+      <div><span>Выполнено</span><b id="prog">0%</b></div>
+      <div><span>Время</span><b id="time">0:00</b></div>
+      <div><span>Ваша длина</span><b id="len">0</b></div>
+      <div><span>Эталон</span><b id="auto">0</b></div>
+      <div><span>Изгибы (вы / эталон)</span><b id="bnd">0</b></div>
+      <div><span>Переходы (вы / эталон)</span><b id="via">0</b></div>
+      <div class="wide"><span>Длинная к медианной (вы / эталон)</span><b id="even">0</b></div>
+      <div class="wide"><span>Лучший результат на этой плате</span><b id="best">—</b></div>
     </div>
-    <div class="schwrap">
-      <nav id="palette" aria-label="Компоненты"></nav>
-      <div id="schHost">
-        <div id="inspector" class="inspector" hidden>
-          <svg class="ic"><use href="#i-tag"/></svg>
-          <select id="desSel" aria-label="Позиционное обозначение"></select>
-          <span id="desVal"></span>
-        </div>
-        <div id="pinTip" class="pintip" hidden></div>
-        <aside id="results" hidden>
-          <div class="rhead"><strong id="rTitle"></strong><button class="ico" id="rClose" aria-label="Закрыть" data-tip="Закрыть" data-pos="l"><svg class="ic"><use href="#i-close"/></svg></button></div>
-          <div id="rBody"></div>
-        </aside>
+    <button id="bKeys" class="alt keys" aria-expanded="false">Горячие клавиши</button>
+  </aside>
+  <aside class="ctrl">
+    <label>Уровень
+      <select id="lvl"><option value="1">1 — простая плата</option><option value="2">2 — средняя</option><option value="3">3 — плотная</option><option value="4">4 — очень плотная</option></select>
+    </label>
+    <label>ID платы <input id="seed" type="number"></label>
+    <div class="row">
+      <button id="bNew">Новая плата</button>
+      <button id="bSeed" class="alt">Загрузить ID</button>
+      <button id="bLayer">Слой: верхний (Пробел)</button>
+      <button id="bMode" class="alt">Излом: диагональ, затем прямая (F)</button>
+      <div class="icons">
+        <button id="bUndo" class="alt" title="Отменить участок (Ctrl+Z)" aria-label="Отменить участок">↶</button>
+        <button id="bRedo" class="alt" title="Вернуть участок (Ctrl+Y)" aria-label="Вернуть участок">↷</button>
+        <button id="bReset" class="alt" title="Начать заново" aria-label="Начать заново">↻</button>
       </div>
+      <button id="bPause" class="alt">Пауза дорожки (Esc)</button>
+      <button id="bDel" class="alt">Удалить дорожку (Delete)</button>
+      <button id="bHint" class="alt">Подсказка (−3 балла)</button>
+      <button id="bGhost" class="alt">Показать эталон</button>
+      <button id="bAnim" class="alt">Анимация эталона (A)</button>
     </div>
-    <div class="statusbar"><span id="stCursor">x 0.00 · y 0.00</span><span class="meter" data-tip="Проводов"><svg class="ic"><use href="#i-wire"/></svg><b id="stWires">0</b></span><span id="stSel" class="meter" hidden><svg class="ic"><use href="#i-boxsel"/></svg><b id="stSelN"></b></span><span class="credit">Разработали Задериев А.Р. и Гапеев И.Е.</span></div>
-  </section>
+  </aside>
 </main>
-<div id="tip" role="tooltip" hidden></div>
-<div id="toast" role="status"></div>
-
-<dialog id="help">
-  <h2>Как собрать схему по плате</h2>
-  <ol>
-    <li>Выберите плату в списке под названием приложения. Прогресс по каждой плате сохраняется отдельно.</li>
-    <li>Изучите плату слева: вращайте, приближайте, меняйте вид и слои.</li>
-    <li>Перетащите нужные компоненты из панели слева на холст (или просто кликните по карточке). Цифры <b>0/6</b> показывают, сколько штук уже размещено. Вернуть компонент в панель можно перетаскиванием обратно или клавишей Del.</li>
-    <li>Компоненты одного типа различаются обозначениями. Выберите компонент и укажите в списке над холстом, какой именно это элемент платы (R1, R2…): читайте шелкографию.</li>
-    <li>Проведите провода: тяните от вывода к выводу или нажмите <b>W</b> и кликайте. Клик по пустому месту ставит излом, клик по выводу, узлу или проводу завершает провод (на проводе получится ответвление). Можно и зажать ЛКМ, протянуть и отпустить. Пробел меняет направление излома, Backspace — шаг назад, Esc — отмена провода, ПКМ или двойной клик — завершить. Чтобы изменить готовый провод, выделите его и потяните за сегмент: он сдвинется, соседние растянутся. Земля и питание подключаются к символам GND и +BATT из панели.</li>
-    <li>Нажмите <b>«Проверить»</b>: красные провода — лишнее или неверное соединение, оранжевый пунктир — пропущенное.</li>
-  </ol>
-  <p class="keys"><b>Выделение рамкой:</b> тяните по пустому месту. Слева направо — выделяется только то, что целиком внутри рамки (синяя). Справа налево — всё, чего рамка хоть немного касается (зелёная пунктирная). Shift/Ctrl добавляет к выделению.</p>
-  <p class="keys"><b>Клавиши:</b> V выбор · W провод · R поворот · X отражение · Del удалить · Ctrl+A выделить всё · F вписать · Esc отмена · Ctrl+Z/Y отмена/повтор · Пробел или средняя/правая кнопка — сдвиг холста.</p>
-  <form method="dialog"><button class="primary">Понятно</button></form>
-</dialog>
-<script src="js/three.min.js"></script>
-<script src="js/OrbitControls.js"></script>
-<script src="boards/boards.js"></script>
-<script src="js/checker.js"></script>
-<script src="js/viewer3d.js"></script>
-<script src="js/editor.js"></script>
-<script src="js/palette.js"></script>
-<script src="js/anim.js"></script>
-<script src="js/app.js"></script>
+<div id="keys" hidden>
+  <p><kbd>ЛКМ</kbd> начать, зафиксировать участок, завершить</p>
+  <p><kbd>ПКМ</kbd> отменить участок или удалить дорожку под курсором</p>
+  <p><kbd>Пробел</kbd> сменить слой, при прокладке поставить переход</p>
+  <p><kbd>F</kbd> порядок излома</p>
+  <p><kbd>Esc</kbd> пауза текущей дорожки</p>
+  <p><kbd>Delete</kbd> удалить текущую дорожку</p>
+  <p><kbd>Ctrl+Z</kbd> отменить участок</p>
+  <p><kbd>Ctrl+Y</kbd> вернуть участок</p>
+  <p><kbd>H</kbd> подсказка</p>
+  <p><kbd>A</kbd> анимация эталонной трассировки</p>
+</div>
+<nav class="tools" aria-label="Быстрые действия">
+  <button data-act="layer" id="tbLayer">Верх</button>
+  <button data-act="mode" class="alt">Излом</button>
+  <button data-act="undo" class="alt" aria-label="Отменить участок">↶</button>
+  <button data-act="redo" class="alt" aria-label="Вернуть участок">↷</button>
+  <button data-act="pause" class="alt">Пауза</button>
+  <button data-act="del" class="alt">Удалить</button>
+  <button data-act="hint" class="alt">Подсказка</button>
+</nav>
+<footer>Разработал Задериев А.Р.</footer>
+<script src="js/router.js"></script>
+<script src="js/generator.js"></script>
+<script src="js/game.js"></script>
 </body>
 </html>
